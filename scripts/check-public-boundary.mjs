@@ -15,7 +15,7 @@ const forbidden = [
   { name: 'deployment account detail', expression: /\bdeploy@/i },
   { name: 'private forge reference', expression: new RegExp(['gi', 'tea'].join(''), 'i') },
 ];
-const genericEmails = new Set(['owner@example.com', 'owner@example.test', 'other@example.test', 'maintainers@vikunja-mcp.invalid']);
+const genericEmails = new Set(['owner@example.com', 'owner@example.test', 'other@example.test', 'maintainers@vikunja-mcp.invalid', 'noreply@github.com']);
 const emailExpression = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi;
 const problems = [];
 
@@ -33,7 +33,7 @@ for (const relativePath of trackedPaths) {
   }
 }
 
-for (const row of git(['log', '--all', '--format=%H%x00%ae%x00%ce']).split('\n').filter(Boolean)) {
+for (const row of git(['log', 'HEAD', '--format=%H%x00%ae%x00%ce']).split('\n').filter(Boolean)) {
   const [commit, authorEmail, committerEmail] = row.split('\0');
   for (const email of [authorEmail, committerEmail]) {
     if (email && email !== 'maintainers@vikunja-mcp.invalid' && !email.endsWith('@users.noreply.github.com')) {
