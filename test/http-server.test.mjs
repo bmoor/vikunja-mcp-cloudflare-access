@@ -98,27 +98,30 @@ test('authenticated requests expose usable stateless Streamable HTTP MCP respons
   }
 });
 
-test('an explicitly allowed identity sees the owner-sharing project creation tool', async () => {
+test('an explicitly allowed identity sees the narrow write tools', async () => {
+  const events = [];
   const app = createHttpApp({
     client: { async getInfo() { return { version: 'test' }; } },
     validator: { async validate() { return { email: 'owner@example.test' }; } },
-    logger: { event() {} }, writeEnabled: true,
-    writeAllowedEmails: new Set(['owner@example.test']), projectOwnerUserId: 1,
+    logger: { event(name, fields) { events.push({ name, ...fields }); } },
+    writeEnabled: true,
+    writeAllowedEmails: new Set(['owner@example.test']),
+    projectOwnerUserId: 1,
   });
   const server = await new Promise((resolve) => {
     const listening = app.listen(0, '127.0.0.1', () => resolve(listening));
   });
   try {
-    await request(server, 'POST', '/mcp', {
-      jsonrpc: '2.0', id: 1, method: 'initialize',
-      params: { protocolVersion: '2025-03-26', capabilities: {}, clientInfo: { name: 'test', version: '1.0.0' } },
-    });
     const response = await request(server, 'POST', '/mcp', {
-      jsonrpc: '2.0', id: 2, method: 'tools/list', params: {},
+      jsonrpc: '2.0', id: 1, method: 'tools/list', params: {},
     });
     const toolNames = JSON.parse(response.body).result.tools.map((tool) => tool.name);
-    assert.ok(toolNames.includes('create_project'));
-    assert.equal(toolNames.includes('delete_project'), false);
+    assert.deepEqual(
+      toolNames.filter((name) => ['create_project', 'create_task', 'update_task', 'complete_task'].includes(name)).sort(),
+      ['complete_task', 'create_project', 'create_task', 'update_task'],
+    );
+    assert.equal(toolNames.includes('delete_task'), false);
+    assert.ok(events.some((event) => event.name === 'tool_catalogue' && event.write_tools_visible === true));
   } finally {
     await new Promise((resolve, reject) => server.close((error) => error ? reject(error) : resolve()));
   }
