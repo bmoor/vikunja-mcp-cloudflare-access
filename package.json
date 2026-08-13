@@ -1,0 +1,23 @@
+{
+  "name": "vikunja-mcp-cloudflare-access",
+  "version": "0.1.0",
+  "description": "A secure remote MCP adapter for Vikunja behind Cloudflare Access Managed OAuth.",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node --test",
+    "check:public-boundary": "node scripts/check-public-boundary.mjs",
+    "setup:public-git": "node scripts/configure-public-git.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.30.0",
+    "express": "5.2.1",
+    "jose": "6.2.8",
+    "zod": "4.3.6"
+  }
+}

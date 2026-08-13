@@ -1,0 +1,42 @@
+services:
+  vikunja-mcp:
+    build: .
+    env_file:
+      - .env
+    environment:
+      PORT: 3000
+      VIKUNJA_ALLOWED_PROJECT_IDS: "7"
+      MCP_WRITE_ENABLED: "false"
+    expose:
+      - "3000"
+    networks:
+      - vikunja
+      - mcp-proxy
+      - mcp-egress
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/healthz').then((response) => process.exit(response.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    restart: unless-stopped
+
+# This fragment is for a Compose stack that also owns the Cloudflare Tunnel
+# connector: mcp-proxy is therefore an internal, stack-owned bridge. If the
+# connector lives in another Compose project, create a named shared bridge once
+# and declare mcp-proxy as external in both projects. The MCP service itself
+# has no host port.
+networks:
+  vikunja:
+    external: true
+  mcp-proxy:
+    internal: true
+  mcp-egress:
+    driver: bridge

@@ -1,0 +1,13 @@
+#!/usr/bin/env sh
+set -eu
+
+if command -v node >/dev/null 2>&1; then
+  exec node scripts/check-public-boundary.mjs
+fi
+
+if command -v cmd.exe >/dev/null 2>&1; then
+  exec cmd.exe //d //s //c "node scripts\\check-public-boundary.mjs"
+fi
+
+echo "Node.js is required for the public repository boundary check." >&2
+exit 1
