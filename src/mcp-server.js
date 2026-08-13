@@ -29,6 +29,7 @@ export function createMcpServer(dependencies) {
   const tools = createToolHandlers(dependencies);
   const writesVisible = dependencies.writeEnabled
     && dependencies.writeAllowedEmails.has(dependencies.requestIdentity.email);
+  dependencies.logger.event('tool_catalogue', { write_tools_visible: writesVisible });
 
   server.registerTool('list_projects', {
     title: 'List Vikunja projects',
